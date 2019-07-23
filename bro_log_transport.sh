@@ -221,12 +221,11 @@ status "Preparing remote directories"
 ssh $extra_ssh_params "$aih_location" "mkdir -p ${remote_top_dir}/$today/ ${remote_top_dir}/$yesterday/ ${remote_top_dir}/$twoda/ ${remote_top_dir}/$threeda/ ${remote_top_dir}/current/"
 
 
-send_candidates=`find "$local_tld" -type f -mtime -3 -iname '*.gz' | egrep '(conn|dns|http|ssl|x509|known_certs)' | sed -e 's@^.*/logs/@@' -e 's@^.*/_data/@@' | sort -u`
 cd "$local_tld" || fail "Unable to change to $local_tld"
+send_candidates=`find . -type f -mtime -3 -iname '*.gz' | egrep '(conn\.|dns\.|http\.|ssl\.|x509\.|known_certs\.)' | sort -u`
 status "Transferring files to $aih_location"
 $nice_me rsync $rsyncparams -avR -e "ssh $extra_ssh_params" $send_candidates "$aih_location:${remote_top_dir}/" --delay-updates
 
 #Note: after we added a user option to set the destination dir, we remove the --temp-dir option as this dir may not be on the same mount point as the destination dir.
 #rsync will put temporary files in a .~tmp~ directory under each destination subdir.
 #Originally:  --temp-dir="/opt/bro/tmp/$my_id/"
-
